@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Gamsl 2</title>
+
+    <link rel="stylesheet" href="styles/main.css" >
+    <script rel="script" src="javascript/libs/jquery/jquery.js"></script>
+    <script rel="script" src="javascript/libs/three.js/three.min.js"></script>
+    <script rel="script" src="javascript/gamsl/utils/keys.js"></script>
+    <script rel="script" src="javascript/gamsl/model/controls.js"></script>
+</head>
+<body>
+
+    <div id="web-gl-canvas"></div>
+
+    <script>
+
+        $(function(){
+
+            var controls = new GAMSL.Controls($("#web-gl-canvas")[0]);
+            controls.registerKey("R");
+            controls.registerKey("SPACE"," ".charCodeAt(0));
+
+
+            var el = document.getElementById("web-gl-canvas");
+
+
+            var eng = (function(cont){
+
+                var controls = cont;
+                var lastTime = 0;
+                var buttonsPressed;
+                var radius = 15;
+                var camerax = 0;
+                var cameraz = 0;
+
+                function makeStep(){
+
+                    controls.update(this);
+
+                    var timeNow = new Date().getTime();
+                    if (lastTime != 0) {
+                        var elapsed = timeNow - lastTime;
+                        animate(elapsed);
+                    }
+                    lastTime = timeNow;
+                }
+
+                function animate(elapsed){
+
+                    var cameraToBall = new THREE.Vector3(0,0,0);
+                    cameraToBall = cameraToBall.subVectors(sphere.position, camera.position);
+                    cameraToBall.y = 0;
+                    cameraToBall.normalize();
+                    cameraToBall.applyAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI/2 );
+                    var cpy = cameraToBall.clone();
+
+                    if(buttonsPressed.LEFT) {
+
+                        cpy.multiplyScalar(elapsed/100);
+                        sphere.position.add(cpy);
+
+                    }
+                    cpy = cameraToBall.clone();
+
+                    if(buttonsPressed.RIGHT){
+
+                        cpy.multiplyScalar(-elapsed/100);
+                        sphere.position.add(cpy);
+
+                    }
+
+                    cameraToBall.applyAxisAngle( new THREE.Vector3( 0, 1, 0 ), -Math.PI/2 );
+                    cpy = cameraToBall.clone();
+
+                    if(buttonsPressed.UP) {
+
+                        cpy.multiplyScalar(elapsed/100);
+                        sphere.position.add(cpy);
+
+                    }
+
+                    cpy = cameraToBall.clone();
+                    if(buttonsPressed.DOWN){
+
+                        cpy.multiplyScalar(-elapsed/100);
+                        sphere.position.add(cpy);
+
+                    }
+
+
+                    camera.position.x = sphere.position.x + radius * Math.sin( camerax/1000 );
+                    camera.position.z = sphere.position.z + radius * Math.cos( camerax/1000 );
+                    camera.lookAt( sphere.position );
+
+                }
+
+                function parseInput(controlsInput){
+
+                    buttonsPressed = controlsInput;
+                    camerax -= buttonsPressed.movementX;
+
+                }
+
+                return {
+
+                    makeStep:makeStep,
+                    controlsInput: parseInput
+
+                }
+
+            })(controls);
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera( 75, el.clientWidth / el.clientHeight, 0.1, 1000 );
+            var renderer = new THREE.WebGLRenderer({antialias:true});
+            renderer.setSize( el.clientWidth-20, el.clientHeight-20 );
+            renderer.setClearColor( 0xdddddd, 1);
+
+            el.appendChild( renderer.domElement );
+
+            scene.add( new THREE.AmbientLight( 0xffffff ) );
+
+
+            var plane = new THREE.Mesh(
+                    new THREE.PlaneGeometry(25, 25),
+                    new THREE.MeshBasicMaterial({color: 0xc0c0c0,metal:false})
+            );
+
+            plane.material.side = THREE.DoubleSide;
+            plane.rotation.x = Math.PI / 2;
+
+            plane.overdraw = true;
+            scene.add(plane);
+
+            camera.position.set( 0, 10, 15 );
+            camera.lookAt( scene.position );
+            camera.lookAt(new THREE.Vector3(0,0,0));
+
+
+            var light = new THREE.PointLight( 0xFFFF00 );
+            light.position.set( 10, 0, 10 );
+            scene.add( light );
+
+            var lights = [];
+            lights[0] = new THREE.PointLight( 0xffffff, 1, 0 );
+            lights[1] = new THREE.PointLight( 0xffffff, 1, 0 );
+            lights[2] = new THREE.PointLight( 0xffffff, 1, 0 );
+
+            lights[0].position.set( 0, 200, 0 );
+            lights[1].position.set( 100, 200, 100 );
+            lights[2].position.set( -100, -200, -100 );
+
+            scene.add( lights[0] );
+            scene.add( lights[1] );
+            scene.add( lights[2] );
+
+            var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+            var material = new THREE.MeshPhongMaterial({color: 0x000,metal:false})
+            var sphere = new THREE.Mesh( geometry, material );
+            scene.add( sphere );
+
+            sphere.position.y=1;
+
+            renderer.render(scene, camera);
+
+            var geometry = new THREE.RingGeometry( 1, 2, 32 );
+            var material = new THREE.MeshPhongMaterial( { color: 0xffff00, side: THREE.DoubleSide } );
+            var mesh = new THREE.Mesh( geometry, material );
+            mesh.position.x = 5;
+            mesh.position.z = 5;
+            scene.add( mesh );
+
+            var geometry = new THREE.DodecahedronGeometry();
+            var material = new THREE.MeshPhongMaterial( { color: 0x0000ff, side: THREE.DoubleSide } );
+            var mesh = new THREE.Mesh( geometry, material );
+            mesh.position.x = -5;
+            mesh.position.z = -5;
+            mesh.position.y = 3;
+            scene.add( mesh );
+
+            var geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
+            var material = new THREE.MeshPhongMaterial( { color: 0x0000ff, side: THREE.DoubleSide } );
+            var mesh = new THREE.Mesh( geometry, material );
+            mesh.position.x = -5;
+            mesh.position.z = 5;
+            mesh.position.y = 3;
+            mesh.rotation.y = Math.PI/3;
+            scene.add( mesh );
+
+            function render(){
+                requestAnimationFrame(render);
+                eng.makeStep();
+                renderer.render(scene, camera);
+            }
+            render();
+
+
+
+        });
+
+    </script>
+
+</body>
+</html>
