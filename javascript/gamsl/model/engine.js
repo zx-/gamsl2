@@ -43,7 +43,7 @@ GAMSL.Engine.prototype = {
 
             if ( obj.isAffectedByGravity ) {
 
-                this._objectMover.applyGravity(obj, elapsed);
+                this._objectMover.applyGravity( obj, elapsed );
 
             }
 

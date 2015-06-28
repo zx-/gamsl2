@@ -5,6 +5,7 @@
 GAMSL.ObjectMover = function () {
 
     this._gravityAcc = new THREE.Vector3( 0, -1, 0 );
+    this._collisionSorver = new GAMSL.DummyCollisionSolver();
 
 };
 
@@ -23,6 +24,7 @@ GAMSL.ObjectMover.prototype = {
 
     _solveCollision: function ( o, neighbour, elapsed ) {
 
+        this._collisionSorver.solveCollision( o, neighbour, elapsed );
 
     },
 
@@ -33,6 +35,9 @@ GAMSL.ObjectMover.prototype = {
      * @param elapsed
      */
     move: function ( o, neighbours, elapsed ) {
+
+        if( !o.isMovable )
+            return;
 
         for ( var i = 0; i < neighbours.length; i++ ) {
 

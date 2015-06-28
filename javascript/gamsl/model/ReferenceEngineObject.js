@@ -77,7 +77,7 @@ GAMSL.ReferenceEngineObject.prototype = {
      * (OPTIONAL)
      * This event is triggered by engine when object touches other object.
      * Second object will be passed as argument o.
-     * @param o
+     * @param o object with whom this is touching.
      */
     onTouch: function( o ){}
 
