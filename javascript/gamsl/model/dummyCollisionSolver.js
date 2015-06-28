@@ -24,6 +24,8 @@ GAMSL.DummyCollisionSolver.prototype = {
      */
     solveCollision: function ( o, neighbour, elapsed ) {
 
+        var dt = elapsed / 1000;
+
         // compute bounding sphere if needed
         if ( neighbour.geometry.boundingSphere === null ) {
 
@@ -34,7 +36,7 @@ GAMSL.DummyCollisionSolver.prototype = {
 
         // check if collision is possible
         var distance = o.position.distanceTo( neighbour.position );
-        if( distance - o.speed.length*elapsed - neighbour.geometry.boundingSphere.radius <= 0 ){
+        if ( distance - o.speed.length()*dt - neighbour.geometry.boundingSphere.radius <= 0 ){
 
             //TODO This neighbours should be checked after objects that can change speed
             //TODO This can be inaccurate if other object changes speed. Engine object should manage it.
@@ -42,25 +44,44 @@ GAMSL.DummyCollisionSolver.prototype = {
             var rotationMatrix = neighbour.matrixWorld;
             var inverseRotationMatrix = new THREE.Matrix4().getInverse( rotationMatrix );
 
-            var positionRelative = new THREE.Vector4( o.position ).applyMatrix4( inverseRotationMatrix );
-            var speedRelative = new THREE.Vector4( o.speed ).applyMatrix4( inverseRotationMatrix );
+            var positionRelative = new THREE.Vector4(
+                o.position.x,
+                o.position.y,
+                o.position.z,
+                1
+            ).applyMatrix4( inverseRotationMatrix );
 
-            var v3positionRelative = new THREE.Vector3(positionRelative);
-            var v3speedRelative = new THREE.Vector3(speedRelative)
+            var speedRelative = new THREE.Vector4(
+                o.speed.x,
+                o.speed.y,
+                o.speed.z,
+                1
+            ).applyMatrix4( inverseRotationMatrix );
 
+            var v3positionRelative = new THREE.Vector3(
+                positionRelative.x,
+                positionRelative.y,
+                positionRelative.z
+            );
+
+            var v3speedRelative = new THREE.Vector3(
+                speedRelative.x,
+                speedRelative.y,
+                speedRelative.z
+            );
+
+            v3positionRelative.add( v3speedRelative.clone().multiplyScalar( dt ) );
+            var xDot = v3positionRelative.dot( this._xAxis );
+            var yDot = v3positionRelative.dot( this._yAxis );
+            var zDot = v3positionRelative.dot( this._zAxis );
+            var nG = neighbour.geometry.parameters;
+            var oG = o.geometry.parameters;
 
             if( neighbour.isEnterable ) {
 
-                v3positionRelative.add( v3speedRelative.multiplyScalar( elapsed ) );
-                var xDot = v3positionRelative.dot(this._xAxis);
-                var yDot = v3positionRelative.dot(this._yAxis);
-                var zDot = v3positionRelative.dot(this._zAxis);
-                var nG = neighbour.geometry;
-                var oG = o.geometry;
-
-                if( ( xDot < nG.width + oG.radius && xDot > - oG.radius ) &&
-                    ( yDot < nG.height + oG.radius && yDot > - oG.radius ) &&
-                    ( zDot < nG.depth + oG.radius && zDot > - oG.radius ) ) {
+                if ( ( xDot < nG.width/2 + oG.radius && xDot > - oG.radius - nG.width/2) &&
+                     ( yDot < nG.height/2 + oG.radius && yDot > - oG.radius - nG.height/2 ) &&
+                     ( zDot < nG.depth/2 + oG.radius && zDot > - oG.radius - nG.depth/2 ) ) {
 
                     if ( neighbour.onEnter ) {
 
@@ -72,7 +93,65 @@ GAMSL.DummyCollisionSolver.prototype = {
 
             } else {
 
+                if ( ( xDot < nG.width/2 + oG.radius && xDot > - oG.radius - nG.width/2) &&
+                     ( yDot < nG.height/2 + oG.radius && yDot > - oG.radius - nG.height/2 ) &&
+                     ( zDot < nG.depth/2 + oG.radius && zDot > - oG.radius - nG.depth/2 ) ) {
 
+                    var collisionVector = new THREE.Vector3( 0, 0, 0 );
+
+                    if ( xDot < -nG.width/2 ) collisionVector.x = -1;
+                    if ( xDot > nG.width/2 ) collisionVector.x = 1;
+
+                    if ( yDot < -nG.height/2 ) collisionVector.y = -1;
+                    if ( yDot > nG.height/2 ) collisionVector.y = 1;
+
+                    if ( zDot < -nG.depth/2 ) collisionVector.z = -1;
+                    if ( zDot > nG.depth/2 ) collisionVector.z = 1;
+
+                    collisionVector.normalize();
+                    collisionVector.multiplyScalar( -1 );
+
+                    if ( v3speedRelative.dot( collisionVector ) > 0 ) {
+
+                        var normalSpeedDot = v3speedRelative.dot( collisionVector );
+                        collisionVector.multiplyScalar( normalSpeedDot );
+
+                        v3speedRelative.sub( collisionVector );
+                        collisionVector.multiplyScalar( -1 );
+                        v3speedRelative.add( collisionVector );
+
+                        var v4speedNew = new THREE.Vector4(
+                            v3speedRelative.x,
+                            v3speedRelative.y,
+                            v3speedRelative.z,
+                            1
+                        );
+
+                        v4speedNew.applyMatrix4( rotationMatrix );
+
+                        o.speed = new THREE.Vector3(
+                            v4speedNew.x,
+                            v4speedNew.y,
+                            v4speedNew.z
+                        );
+
+                        o.speed.multiplyScalar( 0.8 );
+
+                        if ( neighbour.onTouch ) {
+
+                            neighbour.onTouch( o );
+
+                        }
+
+                        if ( o.onTouch ) {
+
+                            o.onTouch( neighbour );
+
+                        }
+
+                    }
+
+                }
 
             }
 

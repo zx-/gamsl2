@@ -58,7 +58,7 @@ GAMSL.Timer.prototype = {
 
             for (var i = 0; i < this._tickListeners.length; i++) {
 
-                this._tickListeners.tick( elapsed );
+                this._tickListeners[ i ].tick( elapsed );
 
             }
 

@@ -5,17 +5,24 @@
     <title>Gamsl 2</title>
 
     <link rel="stylesheet" href="styles/main.css" >
+    <script rel="script" src="javascript/gamsl/gamsl.js"></script>
     <script rel="script" src="javascript/libs/jquery/jquery.js"></script>
     <script rel="script" src="javascript/libs/three.js/three.min.js"></script>
     <script rel="script" src="javascript/gamsl/utils/keys.js"></script>
     <script rel="script" src="javascript/gamsl/model/controls.js"></script>
+    <script rel="script" src="javascript/gamsl/model/timer.js"></script>
+    <script rel="script" src="javascript/gamsl/model/dummyCollisionSolver.js"></script>
+    <script rel="script" src="javascript/gamsl/model/ObjectMover.js"></script>
+    <script rel="script" src="javascript/gamsl/model/engine.js"></script>
+    <script rel="script" src="javascript/gamsl/model/model.js"></script>
+    <script rel="script" src="javascript/gamsl/view/renderer.js"></script>
 </head>
 <body>
 
     <div id="web-gl-canvas"></div>
 
     <script>
-
+/*
         $(function(){
 
             var controls = new GAMSL.Controls($("#web-gl-canvas")[0]);
@@ -199,7 +206,81 @@
 
 
         });
+*/
 
+    $(function(){
+
+
+        var timer = new GAMSL.Timer();
+        var engine = new GAMSL.Engine( timer );
+        var model = new GAMSL.Model( engine );
+        var renderer = new GAMSL.Renderer( timer, camera );
+        var camera = renderer._camera;
+        var light = new THREE.PointLight( 0xFFFF00 );
+        light.position.set( 10, 0, 10 );
+        renderer.addRenderable( light );
+
+        var lights = [];
+        lights[0] = new THREE.PointLight( 0xffffff, 1, 0 );
+        lights[1] = new THREE.PointLight( 0xffffff, 1, 0 );
+        lights[2] = new THREE.PointLight( 0xffffff, 1, 0 );
+
+        lights[0].position.set( 0, 200, 0 );
+        lights[1].position.set( 100, 200, 100 );
+        lights[2].position.set( -100, -200, -100 );
+
+        renderer.addRenderable( lights[0] );
+        renderer.addRenderable( lights[1] );
+        renderer.addRenderable( lights[2] );
+
+        camera.position.set( 0, 10, 15 );
+        camera.lookAt(new THREE.Vector3(0,0,0));
+
+        var geometry = new THREE.DodecahedronGeometry();
+        var material = new THREE.MeshPhongMaterial( { color: 0x0000ff, side: THREE.DoubleSide } );
+        var mesh = new THREE.Mesh( geometry, material );
+        mesh.position.x = -5;
+        mesh.position.z = -5;
+        mesh.position.y = 3;
+        renderer.addRenderable( mesh );
+
+        geometry = new THREE.BoxGeometry(6,1,4);
+        material = new THREE.MeshPhongMaterial( { color: 0x00ffff, side: THREE.DoubleSide } );
+        mesh =  new THREE.Mesh( geometry, material );
+
+        mesh.isAffectedByGravity = false;
+        mesh.isMovable = false;
+        mesh.isEnterable = false;
+        mesh.onTouch = function ( o ){
+
+            console.log( "touched with "+o );
+            this.material = new THREE.MeshPhongMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
+
+        };
+
+        mesh.rotateY(Math.PI/3);
+        mesh.rotateX(Math.PI/10);
+
+        engine.registerObject(mesh);
+        renderer.addRenderable(mesh);
+
+
+        geometry = new THREE.SphereGeometry( 1, 32, 32 );
+        material = new THREE.MeshPhongMaterial({color: 0x000,metal:false})
+        mesh =  new THREE.Mesh( geometry, material );
+
+        mesh.isAffectedByGravity = true;
+        mesh.isMovable = true;
+        mesh.isEnterable = false;
+        mesh.speed = new THREE.Vector3(0,0,0);
+        mesh.position.y = 10;
+
+        engine.registerObject(mesh);
+        renderer.addRenderable(mesh);
+
+        model.start();
+
+    });
     </script>
 
 </body>
