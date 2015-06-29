@@ -4,7 +4,7 @@
 
 GAMSL.ObjectMover = function () {
 
-    this._gravityAcc = new THREE.Vector3( 0, -2, 0 );
+    this._gravityAcc = new THREE.Vector3( 0, -5, 0 );
     this._collisionSorver = new GAMSL.DummyCollisionSolver();
 
 };
@@ -19,6 +19,12 @@ GAMSL.ObjectMover.prototype = {
 
         speed.multiplyScalar(dt);
         o.position.add(speed);
+
+        if ( o.onMove ) {
+
+            o.onMove();
+
+        }
 
     },
 

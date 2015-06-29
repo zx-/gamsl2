@@ -44,19 +44,29 @@ GAMSL.DummyCollisionSolver.prototype = {
             var rotationMatrix = neighbour.matrixWorld;
             var inverseRotationMatrix = new THREE.Matrix4().getInverse( rotationMatrix );
 
+             // transform position and speed of o to be relative to neighbour
             var positionRelative = new THREE.Vector4(
                 o.position.x,
                 o.position.y,
                 o.position.z,
                 1
-            ).applyMatrix4( inverseRotationMatrix );
+            );
 
             var speedRelative = new THREE.Vector4(
                 o.speed.x,
                 o.speed.y,
                 o.speed.z,
                 1
-            ).applyMatrix4( inverseRotationMatrix );
+            );
+            speedRelative.add( positionRelative );
+            speedRelative.w = 1;
+            speedRelative.applyMatrix4( inverseRotationMatrix );
+            speedRelative.multiplyScalar( 1/speedRelative.w );
+
+            positionRelative.applyMatrix4( inverseRotationMatrix );
+            positionRelative.multiplyScalar( 1/positionRelative.w );
+            speedRelative.sub( positionRelative );
+            speedRelative.w = 1;
 
             var v3positionRelative = new THREE.Vector3(
                 positionRelative.x,
@@ -127,7 +137,17 @@ GAMSL.DummyCollisionSolver.prototype = {
                             1
                         );
 
+                        v4speedNew.add( positionRelative );
+                        v4speedNew.w = 1;
+
                         v4speedNew.applyMatrix4( rotationMatrix );
+                        v4speedNew.multiplyScalar( 1/v4speedNew.w );
+
+
+                        positionRelative.applyMatrix4( rotationMatrix );
+                        positionRelative.multiplyScalar( 1/positionRelative.w );
+
+                        v4speedNew.sub( positionRelative );
 
                         o.speed = new THREE.Vector3(
                             v4speedNew.x,
@@ -135,7 +155,12 @@ GAMSL.DummyCollisionSolver.prototype = {
                             v4speedNew.z
                         );
 
-                        o.speed.multiplyScalar( 0.8 );
+                        o.speed.multiplyScalar( 0.95 );
+                        if ( o.speed.y > 0 ) {
+
+                            o.speed.y *= 0.8;
+
+                        }
 
                         if ( neighbour.onTouch ) {
 
