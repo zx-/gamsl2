@@ -12,6 +12,7 @@ GAMSL.Engine = function ( timer ) {
     this._objectMover = new GAMSL.ObjectMover();
     this._controlsListeneres = [];
     this._controls = null;
+    this._terrain = null;
 
 };
 
@@ -59,6 +60,12 @@ GAMSL.Engine.prototype = {
 
             obj = this._objects[ i ];
 
+            if ( this._terrain && obj.isMovable ) {
+
+                this._terrain.collideWithSphere( obj, elapsed );
+
+            }
+
             this._objectMover.move( obj, this._getObjectNeighbours( obj ), elapsed );
 
         }
@@ -82,6 +89,12 @@ GAMSL.Engine.prototype = {
     registerObject: function ( o ) {
 
         this._objects.push( o );
+
+    },
+
+    registerTerrain: function ( terrain ) {
+
+        this._terrain = terrain;
 
     },
 

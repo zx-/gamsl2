@@ -145,19 +145,12 @@
 
             for(var i = 0; i< lights.length; i++){
 
-    ////            lights[i].shadowBias=0.004;
-    //            lights[i].shadowCameraRight     =  10;
-    //            lights[i].shadowCameraLeft     = -10;
-    //            lights[i].shadowCameraTop      =  10;
-    //            lights[i].shadowCameraBottom   = -10;
-                lights[i].shadowMapWidth  = 1024;
-                lights[i].shadowMapHeight  = 1024;
+                lights[i].shadowBias = 0.0001;
+                lights[i].shadowDarkness = 0.2;
+                lights[i].shadowMapWidth = 2048;
+                lights[i].shadowMapHeight = 2048;
 
             }
-    //
-    //        lights[0].shadowCameraVisible = true;
-    //        lights[1].shadowCameraVisible = true;
-    //        lights[2].shadowCameraVisible = true;
 
             renderer.addRenderable( lights[0] );
             renderer.addRenderable( lights[1] );
@@ -321,7 +314,7 @@
                  skyDomeTest(renderer);
 
             var texture = THREE.ImageUtils.loadTexture( "imgs/map2.jpg", null, loadedT );
-            var generator = new GAMSL.TerrainGenerator({gap:2,heightCoefficient:0.5});
+            var generator = new GAMSL.TerrainGenerator({gap:4,heightCoefficient:0.5});
 
             var count = 0;
             function loadedT(){
@@ -331,9 +324,9 @@
                 if( count == 1) {
 
 
-                    var mesh = generator.generateMeshFromTextures(texture);
+                    var mesh = generator.generateTerrainMeshFromTextures(texture);
 
-                    renderer.addRenderable(mesh);
+                    renderer.addRenderable( mesh );
                     player.position.y = 20;
 
                     mesh.position.y = -70;
@@ -341,6 +334,7 @@
                     mesh.position.z = -50;
                     mesh.castShadow = true;
                     mesh.receiveShadow = true;
+                    engine.registerTerrain( mesh );
 
 
                     model.start();

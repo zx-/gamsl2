@@ -26,7 +26,7 @@ GAMSL.TerrainGenerator = function ( parameters ) {
 
 GAMSL.TerrainGenerator.prototype = {
 
-    generateMeshFromTextures: function ( mapTexture, texture ) {
+    generateTerrainMeshFromTextures: function ( mapTexture, texture ) {
 
         var image = mapTexture.image;
         var canvasHelper = document.createElement( "canvas" );
@@ -58,7 +58,7 @@ GAMSL.TerrainGenerator.prototype = {
         material.map.format = THREE.RGBFormat;
         material.map.anisotropy = 16;
 
-        return new GAMSL.Terrain( geometry, material, this._gap );
+        return new GAMSL.Terrain( geometry, material, this._gap, image.naturalWidth, image.naturalHeight );
 
 
     },
@@ -122,7 +122,7 @@ GAMSL.TerrainGenerator.prototype = {
 
     },
 
-    _generateGeometryFromImageData: function( imageData, width, height ) {
+    _generateGeometryFromImageData: function ( imageData, width, height ) {
 
         var geometry = new THREE.Geometry();
 
