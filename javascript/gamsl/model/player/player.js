@@ -78,6 +78,16 @@ GAMSL.Player.prototype.tick = function ( elapsed ) {
     }
     this._touch = false;
 
+    if(this._controls.R){
+
+        this.position.x = 0;
+        this.position.y = 20;
+        this.position.z = 0;
+        this.speed = new THREE.Vector3();
+
+    }
+
+
 };
 
 GAMSL.Player.prototype.onTouch = function ( o ) {
@@ -90,7 +100,7 @@ GAMSL.Player.prototype.onMove = function () {
 
     this.camera.position.x = this.position.x + this.cameraRadius * Math.sin( this._cameraX/1000 );
     this.camera.position.z = this.position.z + this.cameraRadius * Math.cos( this._cameraX/1000 );
-    this.camera.position.y = this.position.y + 10;
+    this.camera.position.y = this.position.y + 5;
     this.camera.lookAt( this.position );
 
 };

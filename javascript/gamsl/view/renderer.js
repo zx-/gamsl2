@@ -13,7 +13,7 @@ GAMSL.Renderer = function ( timer, camera ) {
     this._renderer = new THREE.WebGLRenderer( { antialias:true } );
     this._renderer.setSize( this._el.clientWidth-20, this._el.clientHeight-20 );
     this._renderer.setClearColor( 0xdddddd, 1 );
-    //this._renderer.shadowMapEnabled = true;
+    this._renderer.shadowMapEnabled = true;
     this._renderer.shadowMapType = THREE.PCFSoftShadowMap;
     this._el.appendChild( this._renderer.domElement );
     this.canvas = this._renderer.domElement;

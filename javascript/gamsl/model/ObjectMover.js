@@ -4,7 +4,7 @@
 
 GAMSL.ObjectMover = function () {
 
-    this._gravityAcc = new THREE.Vector3( 0, -5, 0 );
+    this._gravityAcc = new THREE.Vector3( 0, -7, 0 );
     this._collisionSorver = new GAMSL.DummyCollisionSolver();
 
 };

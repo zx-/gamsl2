@@ -158,7 +158,7 @@ GAMSL.DummyCollisionSolver.prototype = {
                         o.speed.multiplyScalar( 0.95 );
                         if ( o.speed.y > 0 ) {
 
-                            o.speed.y *= 0.8;
+                            o.speed.y *= 0.6;
 
                         }
 

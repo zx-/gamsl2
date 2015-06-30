@@ -17,190 +17,340 @@
     <script rel="script" src="javascript/gamsl/model/model.js"></script>
     <script rel="script" src="javascript/gamsl/model/player/player.js"></script>
     <script rel="script" src="javascript/gamsl/view/renderer.js"></script>
+    <script rel="script" src="javascript/gamsl/model/terrain/terrainGenerator.js"></script>
+    <script rel="script" src="javascript/gamsl/model/terrain/terrain.js"></script>
 </head>
 <body>
 
     <div id="web-gl-canvas"></div>
+    <!-- skybox shaders -->
+    <script type="application/x-glsl" id="sky-vertex">
+                    varying vec2 vUV;
+
+            void main() {
+                vUV = uv;
+                vec4 pos = vec4(position, 1.0);
+                gl_Position = projectionMatrix * modelViewMatrix * pos;
+            }
+                </script>
+
+    <script type="application/x-glsl" id="sky-fragment">
+            uniform sampler2D texture;
+            varying vec2 vUV;
+
+            void main() {
+              vec4 sample = texture2D(texture, vUV);
+              gl_FragColor = vec4(sample.xyz, sample.w);
+            }
+            </script>
+    <!-- /skybox shad  -->
 
     <script>
+//        / http://www.script-tutorials.com/webgl-with-three-js-lesson-5/
+        function skyBoxTest( renderer ) {
 
-    $(function(){
 
 
 
-        var timer = new GAMSL.Timer();
-        var engine = new GAMSL.Engine( timer );
-        var model = new GAMSL.Model( engine );
-        var renderer = new GAMSL.Renderer( timer, camera );
+                // define path and box sides images
+                var path = 'imgs/';
+                var sides = [ path + 'sbox_px.jpg', path + 'sbox_nx.jpg', path + 'sbox_py.jpg', path + 'sbox_ny.jpg', path + 'sbox_pz.jpg', path + 'sbox_nz.jpg' ];
 
-        var controls = new GAMSL.Controls( renderer.canvas );
-        controls.registerKey("SPACE", " ".charCodeAt(0));
+                // load images
+                var scCube = THREE.ImageUtils.loadTextureCube(sides);
+                scCube.format = THREE.RGBFormat;
 
-        var camera = renderer._camera;
-        var light = new THREE.SpotLight( 0xFFFF00 );
-        light.position.set( 10, 100, 10 );
-        //renderer.addRenderable( light );
+                // prepare skybox material (shader)
+                var skyShader = THREE.ShaderLib["cube"];
+                skyShader.uniforms["tCube"].value = scCube;
+                var skyMaterial = new THREE.ShaderMaterial( {
+                    fragmentShader: skyShader.fragmentShader, vertexShader: skyShader.vertexShader,
+                    uniforms: skyShader.uniforms, depthWrite: false, side: THREE.BackSide
+                });
 
-        engine.setControls(controls);
+                // create Mesh with cube geometry and add to the scene
+                var skyBox = new THREE.Mesh(new THREE.CubeGeometry(500, 500, 500), skyMaterial);
+                skyMaterial.needsUpdate = true;
 
-        var light = new THREE.AmbientLight( 0x404040 ); // soft white light
-        renderer.addRenderable( light );
 
-        var lights = [];
-        lights[0] = new THREE.SpotLight( 0xffffff );
-        lights[1] = new THREE.SpotLight( 0xffffff );
-        lights[2] = new THREE.SpotLight( 0xffffff );
+             renderer.addRenderable(skyBox);
 
-        lights[0].position.set( 0, 100, 0 );
-        lights[1].position.set( 100, 100, 100 );
-        lights[2].position.set( -100, +300, -100 );
 
-        lights[0].castShadow = true;
-        lights[0].shadowDarkness = 0.5;
-        lights[1].castShadow = true;
-        lights[1].shadowDarkness = 0.5;
-        lights[2].castShadow = true;
-        lights[2].shadowDarkness = 0.5 ;
-
-        for(var i = 0; i< lights.length; i++){
-
-            lights[i].shadowBias=0.004;
-            lights[i].shadowCameraRight     =  10;
-            lights[i].shadowCameraLeft     = -10;
-            lights[i].shadowCameraTop      =  10;
-            lights[i].shadowCameraBottom   = -10;
-            lights[i].shadowMapWidth  = 1024;
-            lights[i].shadowMapHeight  = 1024;
 
         }
-//
-//        lights[0].shadowCameraVisible = true;
-//        lights[1].shadowCameraVisible = true;
-//        lights[2].shadowCameraVisible = true;
-
-        renderer.addRenderable( lights[0] );
-        renderer.addRenderable( lights[1] );
-        renderer.addRenderable( lights[2] );
-
-        camera.position.set( 0, 10, 15 );
-        camera.lookAt(new THREE.Vector3(0,0,0));
 
 
 
-        var geometry = new THREE.BoxGeometry(50,1,50);
-        var material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
-        var mesh =  new THREE.Mesh( geometry, material );
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-
-        mesh.isAffectedByGravity = false;
-        mesh.isMovable = false;
-        mesh.isEnterable = false;
-        mesh.onTouch = function ( o ){
-
-            console.log( "touched with "+o );
-            this.material = new THREE.MeshPhongMaterial( { color: 0xffff00} );
-
-        };
-
-//        mesh.rotateY(Math.PI/3);
-//        mesh.rotateX(Math.PI/10);
-
-        engine.registerObject(mesh);
-        renderer.addRenderable(mesh);
-
-        geometry = new THREE.BoxGeometry(6,1,4);
-        material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
-        mesh =  new THREE.Mesh( geometry, material );
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-
-        mesh.isAffectedByGravity = false;
-        mesh.isMovable = false;
-        mesh.isEnterable = false;
-        mesh.onTouch = function ( o ){
-
-            console.log( "touched with "+o );
-            this.material = new THREE.MeshPhongMaterial( { color: 0xfff0f0 } );
-
-        };
-
-        mesh.rotateY(-Math.PI/3);
-        mesh.rotateX(-Math.PI/10);
-        mesh.position.x = 7;
-        mesh.position.z = 7;
-
-        engine.registerObject(mesh);
-        renderer.addRenderable(mesh);
+            function skyDomeTest( renderer ) {
 
 
-        geometry = new THREE.SphereGeometry( 1, 32, 32 );
-        material = new THREE.MeshPhongMaterial({color: 0x000,metal:false})
-        mesh =  new GAMSL.Player( geometry, material, camera );
-        engine.addControlsListener(mesh);
-        mesh.castShadow = true;
+                    // prepare ShaderMaterial
+                    var uniforms = {
+                        texture: { type: 't', value: THREE.ImageUtils.loadTexture('imgs/eso_dark.jpg') }
+                    };
+                    var skyMaterial = new THREE.ShaderMaterial( {
+                        uniforms: uniforms,
+                        vertexShader: document.getElementById('sky-vertex').textContent, fragmentShader: document.getElementById('sky-fragment').textContent
+                    });
+
+                    // create Mesh with sphere geometry and add to the scene
+                    var skyBox = new THREE.Mesh(new THREE.SphereGeometry(250, 60, 40), skyMaterial);
+                    skyBox.scale.set(-1, 1, 1);
+                    skyBox.eulerOrder = 'XZY';
+                    skyBox.renderDepth = 500.0;
 
 
-        mesh.position.y = 10;
+                renderer.addRenderable(skyBox);
 
-        engine.registerObject(mesh);
-        renderer.addRenderable(mesh);
-
-
-        geometry = new THREE.BoxGeometry(10,10,10);
-        material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
-        mesh =  new THREE.Mesh( geometry, material );
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-
-        mesh.isAffectedByGravity = false;
-        mesh.isMovable = false;
-        mesh.isEnterable = false;
-        mesh.onTouch = function ( o ){
-
-            console.log( "touched with "+o );
-            this.material = new THREE.MeshPhongMaterial( { color: 0xff00ff } );
-
-        };
-
-        mesh.position.x = -3;
-        mesh.position.y = 1.5;
-        mesh.position.z = 10;
+            }
 
 
-        engine.registerObject(mesh);
-        renderer.addRenderable(mesh);
-
-        geometry = new THREE.BoxGeometry(10,20,10);
-        material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
-        mesh =  new THREE.Mesh( geometry, material );
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-
-        mesh.isAffectedByGravity = false;
-        mesh.isMovable = false;
-        mesh.isEnterable = false;
-        mesh.onTouch = function ( o ){
-
-            console.log( "touched with "+o );
-            this.material = new THREE.MeshPhongMaterial( { color: 0xff0000 } );
-
-        };
-
-        mesh.position.x = 18;
-        mesh.position.y = 1;
-        mesh.position.z = 12;
-       // mesh.rotateY(-Math.PI/3);
+        $(function(){
 
 
-        engine.registerObject(mesh);
-        renderer.addRenderable(mesh);
+
+            var timer = new GAMSL.Timer();
+            var engine = new GAMSL.Engine( timer );
+            var model = new GAMSL.Model( engine );
+            var renderer = new GAMSL.Renderer( timer, camera );
+
+            var controls = new GAMSL.Controls( renderer.canvas );
+            controls.registerKey("SPACE", " ".charCodeAt(0));
+
+            var camera = renderer._camera;
+            var light = new THREE.SpotLight( 0xFFFF00 );
+            light.position.set( 10, 100, 10 );
+            //renderer.addRenderable( light );
+
+            engine.setControls(controls);
+
+            var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+            renderer.addRenderable( light );
+
+            var lights = [];
+            lights[0] = new THREE.SpotLight( 0xffffff );
+            lights[1] = new THREE.SpotLight( 0xffffff );
+            lights[2] = new THREE.SpotLight( 0xffffff );
+
+            lights[0].position.set( 0, 200, 0 );
+            lights[1].position.set( 100, 200, 100 );
+            lights[2].position.set( -100, +300, -100 );
+
+            lights[0].castShadow = true;
+            lights[0].shadowDarkness = 0.5;
+            lights[1].castShadow = true;
+            lights[1].shadowDarkness = 0.5;
+            lights[2].castShadow = true;
+            lights[2].shadowDarkness = 0.5 ;
+
+            for(var i = 0; i< lights.length; i++){
+
+    ////            lights[i].shadowBias=0.004;
+    //            lights[i].shadowCameraRight     =  10;
+    //            lights[i].shadowCameraLeft     = -10;
+    //            lights[i].shadowCameraTop      =  10;
+    //            lights[i].shadowCameraBottom   = -10;
+                lights[i].shadowMapWidth  = 1024;
+                lights[i].shadowMapHeight  = 1024;
+
+            }
+    //
+    //        lights[0].shadowCameraVisible = true;
+    //        lights[1].shadowCameraVisible = true;
+    //        lights[2].shadowCameraVisible = true;
+
+            renderer.addRenderable( lights[0] );
+            renderer.addRenderable( lights[1] );
+            renderer.addRenderable( lights[2] );
+
+            camera.position.set( 0, 10, 15 );
+            camera.lookAt(new THREE.Vector3(0,0,0));
 
 
-        model.start();
 
-    });
-    </script>
+            var geometry = new THREE.BoxGeometry(50,1,50);
+            var material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
+            var mesh =  new THREE.Mesh( geometry, material );
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
 
-</body>
-</html>
+            mesh.isAffectedByGravity = false;
+            mesh.isMovable = false;
+            mesh.isEnterable = false;
+            mesh.onTouch = function ( o ){
+
+                console.log( "touched with "+o );
+                this.material = new THREE.MeshPhongMaterial( { color: 0xffff00/3} );
+
+            };
+
+    //        mesh.rotateY(Math.PI/3);
+    //        mesh.rotateX(Math.PI/10);
+
+            engine.registerObject(mesh);
+            renderer.addRenderable(mesh);
+
+            geometry = new THREE.BoxGeometry(6,1,4);
+            material = new THREE.MeshPhongMaterial( { color: Math.random()*0xffffff} );
+            mesh =  new THREE.Mesh( geometry, material );
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            mesh.isAffectedByGravity = false;
+            mesh.isMovable = false;
+            mesh.isEnterable = false;
+            mesh.onTouch = function ( o ){
+
+                console.log( "touched with "+o );
+                this.material = new THREE.MeshPhongMaterial( { color: Math.random()*0xffffff*0.5 } );
+
+            };
+
+            mesh.position.x = 7;
+            mesh.position.z = 7;
+            mesh.position.y = 7;
+
+            mesh.rotateY(Math.PI/3);
+            mesh.rotateX(Math.PI/10);
+
+            engine.registerObject(mesh);
+            renderer.addRenderable(mesh);
+
+
+            geometry = new THREE.SphereGeometry( 1, 32, 32 );
+            material = new THREE.MeshPhongMaterial({color: 0x660000,metal:false})
+            mesh =  new GAMSL.Player( geometry, material, camera );
+            var player = mesh;
+            engine.addControlsListener(mesh);
+            mesh.castShadow = true;
+
+
+            mesh.position.y = 10;
+
+            engine.registerObject(mesh);
+            renderer.addRenderable(mesh);
+
+
+            geometry = new THREE.BoxGeometry(10,10,10);
+            material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
+            mesh =  new THREE.Mesh( geometry, material );
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            mesh.isAffectedByGravity = false;
+            mesh.isMovable = false;
+            mesh.isEnterable = false;
+            mesh.onTouch = function ( o ){
+
+                console.log( "touched with "+o );
+                this.material = new THREE.MeshPhongMaterial( { color: Math.random()*0xffffff*05 } );
+
+            };
+
+            mesh.position.x = -3;
+            mesh.position.y = 1.5;
+            mesh.position.z = 10;
+
+
+            mesh.rotateY(-Math.PI/3);
+            mesh.rotateX(-Math.PI/10);
+
+            engine.registerObject(mesh);
+            renderer.addRenderable(mesh);
+
+            geometry = new THREE.BoxGeometry(10,20,10);
+
+            geometry.computeFaceNormals();
+            geometry.computeVertexNormals();
+            material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
+            mesh =  new THREE.Mesh( geometry, material );
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            mesh.isAffectedByGravity = false;
+            mesh.isMovable = false;
+            mesh.isEnterable = false;
+            mesh.onTouch = function ( o ){
+
+                console.log( "touched with "+o );
+                this.material = new THREE.MeshPhongMaterial( { color: Math.random()*0xffffff*05 } );
+
+            };
+
+            mesh.position.x = 18;
+            mesh.position.y = 1;
+            mesh.position.z = 12;
+            mesh.rotateY(-Math.PI/3);
+
+
+            engine.registerObject(mesh);
+            renderer.addRenderable(mesh);
+
+            for( var i = 0; i < 3 ; i++) {
+
+                geometry = new THREE.BoxGeometry(10, 2, 10);
+                material = new THREE.MeshPhongMaterial({color: 0x00ffff});
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+
+                mesh.isAffectedByGravity = false;
+                mesh.isMovable = false;
+                mesh.isEnterable = false;
+                mesh.onTouch = function (o) {
+
+                    console.log("touched with " + o);
+                    this.material = new THREE.MeshPhongMaterial({color: Math.random() * 0xffffff * 05});
+
+                };
+
+                mesh.position.x = 18;
+                mesh.position.y = 15+i*8;
+                mesh.position.z = -12;
+                mesh.rotateY(-Math.PI / 3);
+
+
+                engine.registerObject(mesh);
+                renderer.addRenderable(mesh);
+
+
+            }
+
+
+//            skyBoxTest(renderer);
+                 skyDomeTest(renderer);
+
+            var texture = THREE.ImageUtils.loadTexture( "imgs/map2.jpg", null, loadedT );
+            var generator = new GAMSL.TerrainGenerator({gap:2,heightCoefficient:0.5});
+
+            var count = 0;
+            function loadedT(){
+
+                count++;
+
+                if( count == 1) {
+
+
+                    var mesh = generator.generateMeshFromTextures(texture);
+
+                    renderer.addRenderable(mesh);
+                    player.position.y = 20;
+
+                    mesh.position.y = -70;
+                    mesh.position.x = -50;
+                    mesh.position.z = -50;
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+
+
+                    model.start();
+                }
+
+            }
+
+
+        });
+        </script>
+
+    </body>
+    </html>

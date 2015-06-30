@@ -9,7 +9,7 @@ var Key = {
     UP: "W".charCodeAt(0),
     RIGHT: "D".charCodeAt(0),
     DOWN: "S".charCodeAt(0),
-    R: 82,
+    R: "R".charCodeAt(0),
 
     _listeners :{
         click : function(keyCode,func){

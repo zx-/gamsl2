@@ -13,17 +13,18 @@ var GAMSL = GAMSL || {};
 //TODO exitPointerLock
 GAMSL.Controls = function ( canvas ) {
 
-    this._keys = [ "LEFT", "UP", "DOWN", "RIGHT" ];
+    this._keys = [ "R", "LEFT", "UP", "DOWN", "RIGHT" ];
 
     this._canvas = canvas;
     this._controlsInput = {
+        R:0,
         movementX : 0,
         movementY : 0,
         LEFT: 0,
         UP: 0,
         RIGHT: 0,
         DOWN: 0,
-        IS_LOCKED:0
+        IS_LOCKED:0 ,
     };
 
     this._canvas.requestPointerLock = this._canvas.requestPointerLock ||
