@@ -46,6 +46,12 @@ GAMSL.Renderer.prototype = {
 
         this._scene.add( renderable );
 
+    },
+
+    removeRenderable: function ( renderable ) {
+
+        this._scene.remove( renderable );
+
     }
 
 

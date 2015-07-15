@@ -62,6 +62,7 @@ GAMSL.Terrain.prototype.collideWithSphere = function ( sphere, elapsed ) {
             normal.multiplyScalar( -1 );
 
             sphere.speed.add( normal );
+            sphere.speed.multiplyScalar(0.995);
 
             sphere.onTouch( this );
 

@@ -52,11 +52,14 @@ GAMSL.TerrainGenerator.prototype = {
         var material =  new THREE.MeshPhongMaterial();
 
 
-        material.map = THREE.ImageUtils.loadTexture("imgs/green-grass-texture.jpg");
-        material.map.repeat.set( 15, 15);
+        material.map = THREE.ImageUtils.loadTexture("imgs/Seamless_Beach_Sand_Texture.jpg");
+        material.bumpMap = THREE.ImageUtils.loadTexture('imgs/Seamless_Beach_Sand_Texture_NORMAL.jpg');
+        material.bumpScale = 1
+        material.map.repeat.set( image.naturalWidth/2, image.naturalHeight/2);
         material.map.wrapS = material.map.wrapT = THREE.RepeatWrapping;
         material.map.format = THREE.RGBFormat;
         material.map.anisotropy = 16;
+        material.shininess = 1;
 
         return new GAMSL.Terrain( geometry, material, this._gap, image.naturalWidth, image.naturalHeight );
 

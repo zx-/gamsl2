@@ -32,6 +32,9 @@ GAMSL.Engine.prototype = {
 
         var obj;
 
+        if(elapsed > 200)
+            return;
+
         if ( this._controls !== null ) {
 
             this._controls.update.apply( this._controls, this._controlsListeneres );

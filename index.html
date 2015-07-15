@@ -5,6 +5,8 @@
     <title>Gamsl 2</title>
 
     <link rel="stylesheet" href="styles/main.css" >
+    <script src="/socket.io/socket.io.js"></script>
+    <script rel="script" src="javascript/libs/stats.min.js"></script>
     <script rel="script" src="javascript/gamsl/gamsl.js"></script>
     <script rel="script" src="javascript/libs/jquery/jquery.js"></script>
     <script rel="script" src="javascript/libs/three.js/three.min.js"></script>
@@ -19,6 +21,7 @@
     <script rel="script" src="javascript/gamsl/view/renderer.js"></script>
     <script rel="script" src="javascript/gamsl/model/terrain/terrainGenerator.js"></script>
     <script rel="script" src="javascript/gamsl/model/terrain/terrain.js"></script>
+    <script rel="script" src="javascript/gamsl/model/socketConnection.js"></script>
 </head>
 <body>
 
@@ -80,6 +83,34 @@
         }
 
 
+        function loadStats(timer){
+
+            var stats = new Stats();
+            stats.setMode( 0 ); // 0: fps, 1: ms, 2: mb
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '0px';
+            stats.domElement.style.top = '0px';
+
+            document.body.appendChild( stats.domElement );
+            stats.begin();
+
+            timer.addTickListener({
+
+                tick: function(elapsed){
+
+
+                    stats.end();
+                    stats.begin();
+
+
+                }
+
+            });
+
+
+        }
+
 
             function skyDomeTest( renderer ) {
 
@@ -128,13 +159,13 @@
             renderer.addRenderable( light );
 
             var lights = [];
-            lights[0] = new THREE.SpotLight( 0xffffff );
-            lights[1] = new THREE.SpotLight( 0xffffff );
-            lights[2] = new THREE.SpotLight( 0xffffff );
+            lights[0] = new THREE.SpotLight( 0xd3d3d3 );
+            lights[1] = new THREE.SpotLight( 0xd3d3d3 );
+            lights[2] = new THREE.SpotLight( 0xd3d3d3 );
 
-            lights[0].position.set( 0, 200, 0 );
-            lights[1].position.set( 100, 200, 100 );
-            lights[2].position.set( -100, +300, -100 );
+            lights[0].position.set( 0, 400, 0 );
+            lights[1].position.set( 100, 400, 100 );
+            lights[2].position.set( +400, 500, 400 );
 
             lights[0].castShadow = true;
             lights[0].shadowDarkness = 0.5;
@@ -153,8 +184,8 @@
             }
 
             renderer.addRenderable( lights[0] );
-            renderer.addRenderable( lights[1] );
-            renderer.addRenderable( lights[2] );
+           // renderer.addRenderable( lights[1] );
+          //  renderer.addRenderable( lights[2] );
 
             camera.position.set( 0, 10, 15 );
             camera.lookAt(new THREE.Vector3(0,0,0));
@@ -211,7 +242,7 @@
 
 
             geometry = new THREE.SphereGeometry( 1, 32, 32 );
-            material = new THREE.MeshPhongMaterial({color: 0x660000,metal:false})
+            material = new THREE.MeshPhongMaterial({color: 0x660000,metal:false});
             mesh =  new GAMSL.Player( geometry, material, camera );
             var player = mesh;
             engine.addControlsListener(mesh);
@@ -309,12 +340,73 @@
 
             }
 
+            geometry = new THREE.BoxGeometry(10,20,10);
 
-//            skyBoxTest(renderer);
-                 skyDomeTest(renderer);
+            geometry.computeFaceNormals();
+            geometry.computeVertexNormals();
+            material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
+            mesh =  new THREE.Mesh( geometry, material );
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            mesh.isAffectedByGravity = false;
+            mesh.isMovable = false;
+            mesh.isEnterable = false;
+            mesh.onTouch = function ( o ){
+
+                console.log( "touched with "+o );
+                this.material = new THREE.MeshPhongMaterial( { color: Math.random()*0xffffff*05 } );
+
+            };
+
+            mesh.position.x = 18;
+            mesh.position.y = 1;
+            mesh.position.z = 70;
+            mesh.rotateY(-Math.PI/3);
+
+
+            engine.registerObject(mesh);
+            renderer.addRenderable(mesh);
+
+
+            geometry = new THREE.BoxGeometry(10,20,10);
+
+            geometry.computeFaceNormals();
+            geometry.computeVertexNormals();
+            material = new THREE.MeshPhongMaterial( { color: 0x00ffff} );
+            mesh =  new THREE.Mesh( geometry, material );
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            mesh.isAffectedByGravity = false;
+            mesh.isMovable = false;
+            mesh.isEnterable = false;
+            mesh.onTouch = function ( o ){
+
+                console.log( "touched with "+o );
+                this.material = new THREE.MeshPhongMaterial( { color: Math.random()*0xffffff*05 } );
+
+            };
+
+            mesh.position.x = 70;
+            mesh.position.y = 1;
+            mesh.position.z = 70;
+            mesh.rotateY(-Math.PI/3);
+
+
+            engine.registerObject(mesh);
+            renderer.addRenderable(mesh);
+
+
+
+         //   skyBoxTest(renderer);
+    //             skyDomeTest(renderer);
 
             var texture = THREE.ImageUtils.loadTexture( "imgs/map2.jpg", null, loadedT );
             var generator = new GAMSL.TerrainGenerator({gap:4,heightCoefficient:0.5});
+            var connection = new GAMSL.SocketConnection( renderer );
+            connection.registerPlayer( player );
+            timer.addTickListener(connection);
 
             var count = 0;
             function loadedT(){
@@ -330,17 +422,37 @@
                     player.position.y = 20;
 
                     mesh.position.y = -70;
-                    mesh.position.x = -50;
-                    mesh.position.z = -50;
+                    mesh.position.x = -mesh.width*mesh.gap/2;
+                    mesh.position.z = -mesh.height*mesh.gap/2;;
                     mesh.castShadow = true;
                     mesh.receiveShadow = true;
                     engine.registerTerrain( mesh );
 
 
                     model.start();
+                    loadStats(timer);
                 }
 
             }
+
+            var loader = new THREE.JSONLoader();
+            loader.load("objs/1_02.js",function(geometry,material){
+
+                var m = new THREE.Mesh(geometry,new THREE.MeshPhongMaterial());
+                m.rotateX(-Math.PI/2);
+                m.position.z = 205;
+                m.position.x = 205;
+                m.scale.set(0.1,.1,.1);
+                m.position.y = 4;
+
+                  renderer.addRenderable( m );
+
+                var i = m.clone()
+
+                i.position.z += 10;
+                renderer.addRenderable(i);
+
+            })
 
 
         });
