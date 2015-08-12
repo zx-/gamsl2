@@ -22,7 +22,7 @@ GAMSL.ObjectMover.prototype = {
 
         if ( o.onMove ) {
 
-            o.onMove();
+            o.onMove(speed);
 
         }
 

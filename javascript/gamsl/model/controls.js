@@ -126,6 +126,7 @@ GAMSL.Controls.prototype = {
      *  controlsInput method will be called with controlsInput object as parameters. This object
      *  contains user input information. Its _controlsInput object of this class. After calling this
      *  method mouse relative movement is reset.
+     *  @param objects to call controlsInput on with this._controlsInput object
      *
      */
     update: function () {

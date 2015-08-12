@@ -26,7 +26,7 @@ GAMSL.TerrainGenerator = function ( parameters ) {
 
 GAMSL.TerrainGenerator.prototype = {
 
-    generateTerrainMeshFromTextures: function ( mapTexture, texture ) {
+    generateTerrainMeshFromTextures: function ( mapTexture) {
 
         var image = mapTexture.image;
         var canvasHelper = document.createElement( "canvas" );
@@ -54,11 +54,17 @@ GAMSL.TerrainGenerator.prototype = {
 
         material.map = THREE.ImageUtils.loadTexture("imgs/Seamless_Beach_Sand_Texture.jpg");
         material.bumpMap = THREE.ImageUtils.loadTexture('imgs/Seamless_Beach_Sand_Texture_NORMAL.jpg');
-        material.bumpScale = 1
+        material.bumpScale = 0.1;
         material.map.repeat.set( image.naturalWidth/2, image.naturalHeight/2);
         material.map.wrapS = material.map.wrapT = THREE.RepeatWrapping;
         material.map.format = THREE.RGBFormat;
         material.map.anisotropy = 16;
+
+        material.bumpMap.repeat.set( image.naturalWidth/2, image.naturalHeight/2);
+        material.bumpMap.wrapS = material.map.wrapT = THREE.RepeatWrapping;
+        material.bumpMap.format = THREE.RGBFormat;
+        material.bumpMap.anisotropy = 16;
+
         material.shininess = 1;
 
         return new GAMSL.Terrain( geometry, material, this._gap, image.naturalWidth, image.naturalHeight );
