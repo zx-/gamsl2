@@ -18,6 +18,7 @@ GAMSL.Renderer = function ( timer ) {
     this._renderer.shadowMapType = THREE.PCFSoftShadowMap;
     this._el.appendChild( this._renderer.domElement );
     this.canvas = this._renderer.domElement;
+    this._clock = new THREE.Clock;
 
 };
 
@@ -38,6 +39,8 @@ GAMSL.Renderer.prototype = {
 
     tick: function ( elapsed ) {
 
+        var d = this._clock.getDelta();
+        THREE.AnimationHandler.update( d );
         this._render();
 
     },

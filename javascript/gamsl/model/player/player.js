@@ -217,15 +217,23 @@ GAMSL.Player.prototype.onMove = function ( move ) {
 GAMSL.Player.prototype.calculateRotationOnCursor = function () {
 
     var relPosCursor = new THREE.Vector3(0,0,0).subVectors(this.cursor.position, this.position);
-    relPosCursor.normalize();
     relPosCursor.y = 0;
 
-    var relAngle;
+    relPosCursor.normalize();
 
-    relAngle = relPosCursor.angleTo(this.angle);
+    var relAngle = 1;
+    var counter = 0;
 
-    this.rotateOnAxis( this._yAxis, relAngle );
-    this.angle.applyAxisAngle( this._yAxis, relAngle );
 
+    var relAngle = 1;
+    var count = 0;
+
+    while( relAngle != 0 && count++ < 15) {
+
+        relAngle = relPosCursor.angleTo(this.angle);
+        this.rotateOnAxis(this._yAxis, relAngle);
+        this.angle.applyAxisAngle(this._yAxis, relAngle);
+
+    }
 
 };

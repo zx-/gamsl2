@@ -2,11 +2,12 @@
  * Created by Gamer on 8/11/2015.
  */
 
-GAMSL.ServerUpdater = function ( connection, renderer, pGeo, npcGeo ) {
+GAMSL.ServerUpdater = function ( connection, renderer, pGeo, npcGeo, npcMat ) {
 
     this._con = connection;
     this._renderer = renderer;
     this._geometries = { player: pGeo, npc: npcGeo };
+    this._materials = {npc:npcMat};
 
     this._con.registerMessageListener(
         "serverState",
@@ -143,15 +144,20 @@ GAMSL.ServerUpdater.prototype._createOtherPlayer = function ( player ) {
 GAMSL.ServerUpdater.prototype._createNPCS = function ( npcs ) {
 
     this._npcs = {};
+    var i = 0;
 
     for( var name in npcs ) {
 
         this._npcs[ name ] = new GAMSL.NPC(
             name,
             npcs[ name ],
-            this._geometries.npc.clone(),
-            new THREE.MeshPhongMaterial()
+            this._geometries.npc,
+            this._materials.npc
         );
+
+        this._npcs[ name ].animation.play(i);
+
+        i+=0.4 ;
 
         this._renderer.addRenderable( this._npcs[ name ] );
 

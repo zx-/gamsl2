@@ -10,6 +10,7 @@
     <script rel="script" src="javascript/libs/jquery/jquery.js"></script>
     <script rel="script" src="javascript/libs/three.js/three.min.js"></script>
     <script rel="script" src="javascript/libs/three.js/collada.js"></script>
+    <script rel="script" src="javascript/libs/three.js/babylon.js"></script>
     <script rel="script" src="javascript/gamsl/utils/keys.js"></script>
     <script rel="script" src="javascript/gamsl/model/controls.js"></script>
     <script rel="script" src="javascript/gamsl/model/timer.js"></script>
@@ -101,8 +102,8 @@
             camera.lookAt(new THREE.Vector3(0,0,0));
 
 
-            var loader = new THREE.JSONLoader();
-            loader.load( 'objs/rigs2.js', function ( geometry ) {
+            var loaderjson = new THREE.JSONLoader();
+            loaderjson.load( 'objs/rigs2.js', function ( geometry ) {
 
                 var sphere = new THREE.SphereGeometry( 1, 32, 32 );
 
@@ -125,10 +126,44 @@
                 renderer.addRenderable(mesh);
                 renderer.addRenderable(player.cursor);
 
-                updater = new GAMSL.ServerUpdater( connection, renderer, geometry, sphere );
-                updater.updatePlayer( player );
+                var loader2 = new THREE.JSONLoader(),
+                        animatedMesh;
 
-                timer.addTickListener( updater );
+                var animation;
+
+                loader2.load( 'objs/zombo4.js', function ( geometry, materials ) {
+
+                    // Tell the material that it has bone weights
+                    var originalMaterial = materials[ 0 ];
+                    originalMaterial.skinning = true;
+
+                    // Create a new SkinnedMesh (important! Not a animatedMesh!)
+                    animatedMesh = new THREE.SkinnedMesh( geometry, originalMaterial );
+
+                    // Optional scale step, your results may vary
+                    animatedMesh.scale.set( 0.065,.065,.065 );
+                    //animatedMesh.rotateOnAxis(new THREE.Vector3(1,0,0),-Math.PI/2);
+
+                    // Instantiate the animation
+                    animation = new THREE.Animation(
+                            animatedMesh,
+                            geometry.animation
+                    );
+
+                    // Start playing the animation
+
+                    animation.play();
+                    renderer.addRenderable( animatedMesh );
+
+                    updater = new GAMSL.ServerUpdater( connection, renderer, mesh.geometry, geometry ,originalMaterial );
+                    updater.updatePlayer( player );
+
+                    timer.addTickListener( updater );
+
+
+                });
+
+
 
             });
 
@@ -140,19 +175,24 @@
                 renderer
             );
 
-            var texture = THREE.ImageUtils.loadTexture('imgs/map2.jpg', {}, function() {
+//            var texture = THREE.ImageUtils.loadTexture('imgs/map2.jpg', {}, function() {
+//
+//                    var gn = new GAMSL.TerrainGenerator({gap:2});
+//                    var t = gn.generateTerrainMeshFromTextures(texture);
+//
+//                t.position.x -= 75;
+//                t.position.z -= 75;
+//                t.position.y -= 5;
+//
+//                engine.registerTerrain(t);
+//                        renderer.addRenderable(t);
+//
+//            });
 
-                    var gn = new GAMSL.TerrainGenerator({gap:2});
-                    var t = gn.generateTerrainMeshFromTextures(texture);
 
-                t.position.x -= 75;
-                t.position.z -= 75;
-                t.position.y -= 5;
 
-                engine.registerTerrain(t);
-                        renderer.addRenderable(t);
 
-            });
+
 
 
             model.start();
