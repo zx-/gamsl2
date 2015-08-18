@@ -228,12 +228,12 @@ GAMSL.Player.prototype.calculateRotationOnCursor = function () {
     var relAngle = 1;
     var count = 0;
 
-    while( relAngle != 0 && count++ < 15) {
+    //while( relAngle != 0 && count++ < 15) {
 
         relAngle = relPosCursor.angleTo(this.angle);
         this.rotateOnAxis(this._yAxis, relAngle);
         this.angle.applyAxisAngle(this._yAxis, relAngle);
 
-    }
+    //}
 
 };

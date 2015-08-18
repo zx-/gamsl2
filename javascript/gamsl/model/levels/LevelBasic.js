@@ -42,7 +42,7 @@ GAMSL.LEVELS.LevelBasic = {
                 material.bumpMap.repeat.set( 10, 10);
                 material.bumpMap.wrapS = material.bumpMap.wrapT = THREE.RepeatWrapping;
                 material.bumpMap.format = THREE.RGBFormat;
-                material.bumpMap.anisotropy =1;
+                material.bumpMap.anisotropy = 1;
 
                 material.shininess = 0;
 

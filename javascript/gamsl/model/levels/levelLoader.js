@@ -29,13 +29,13 @@ GAMSL.LEVELS.LevelLoader.prototype = {
             var color = block.color !== undefined ? block.color : level.blockDefaults.color;
             var material = block.material !== undefined ?
                 block.material
-                :new THREE.MeshPhongMaterial({color:color});
+                :new THREE.MeshPhongMaterial( {color:color} );
 
             var mesh = new THREE.Mesh( geometry,material );
 
-            for( var prop in level.blockDefaults) {
+            for( var prop in level.blockDefaults ) {
 
-                mesh[prop] = level.blockDefaults[prop];
+                mesh[ prop ] = level.blockDefaults[ prop ];
 
             }
 
@@ -43,15 +43,15 @@ GAMSL.LEVELS.LevelLoader.prototype = {
             mesh.position.y = block.position.y;
             mesh.position.z = block.position.z;
 
-            for( var prop in block.functions) {
+            for( var prop in block.functions ) {
 
-                mesh[prop] = block.functions[prop];
+                mesh[ prop ] = block.functions[ prop ];
 
             }
 
-            for( var prop in block.props) {
+            for( var prop in block.props ) {
 
-                mesh[prop] = block.props[prop];
+                mesh[ prop ] = block.props[ prop ];
 
             }
 

@@ -163,6 +163,17 @@
 
                 });
 
+                loader2.load( 'objs/glock1.js', function ( geometry, materials ) {
+
+                      var m = new THREE.Mesh(geometry,materials);
+                    renderer.addRenderable(m);
+                    m.position.y = 5;
+                    m.position.x = 2;
+                    m.position.z = 2;
+
+
+                });
+
 
 
             });
@@ -175,19 +186,19 @@
                 renderer
             );
 
-//            var texture = THREE.ImageUtils.loadTexture('imgs/map2.jpg', {}, function() {
-//
-//                    var gn = new GAMSL.TerrainGenerator({gap:2});
-//                    var t = gn.generateTerrainMeshFromTextures(texture);
-//
-//                t.position.x -= 75;
-//                t.position.z -= 75;
-//                t.position.y -= 5;
-//
-//                engine.registerTerrain(t);
-//                        renderer.addRenderable(t);
-//
-//            });
+            var texture = THREE.ImageUtils.loadTexture('imgs/map2.jpg', {}, function() {
+
+                    var gn = new GAMSL.TerrainGenerator({gap:2});
+                    var t = gn.generateTerrainMeshFromTextures(texture);
+
+                t.position.x -= 75;
+                t.position.z -= 75;
+                t.position.y -= 5;
+
+                engine.registerTerrain(t);
+                        renderer.addRenderable(t);
+
+            });
 
 
 
